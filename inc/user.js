@@ -1,0 +1,167 @@
+var conn = require("./db");
+
+module.exports={
+
+    render(req, res, error){
+
+        res.render("admin/login",{
+         
+            body: req.body,
+            error
+
+        });
+    },
+
+    login(email, password){
+
+        return new Promise((resolve, reject)=>{
+      
+         conn.query(`
+         
+             SELECT * FROM tb_users where email = ?
+
+         `,[
+         
+            email
+
+           ],(err, results)=>{
+
+            if(err){
+
+                reject(err);
+
+            } else {
+
+                if(!results.length > 0){
+
+                    reject ("Usuário ou senha incorreto");
+
+                } else {
+
+                let row = results [0];
+
+                if(row.password !== password){
+                     
+                   reject("Usuário ou senha incorretos")
+
+                  } else {
+
+                    resolve (row);
+
+                  }
+                
+                }
+            }
+              
+        });
+
+    });
+
+  },
+
+
+     getUsers(){
+
+
+                return new Promise((resolve, reject)=>{
+
+                conn.query(`
+                    SELECT * FROM tb_users ORDER BY title `,
+
+                    (err, results)=>{
+
+                        if(err){
+
+                            reject(err);
+                        }
+
+                        resolve(results);
+
+                        });
+
+                });
+
+                
+            }, 
+
+            save(fields, files){
+
+                return new Promise((resolve, reject) => {
+
+                    let query, queryPhoto = '', params = [
+                        
+                        fields.name,
+                        fields.email,
+                    
+                        
+                    ];
+
+                    if(parseInt(fields.id) > 0){
+
+                        params.push(fields.photo);
+
+                        query =`
+                        
+                        UPDATE tb_users
+                        
+                        SET name = ?,
+                            email = ?
+                            WHERE id = ?
+                        
+                        `;         
+
+                    } else {
+
+                        query = `INSERT INTO tb_user(name, email, password)
+
+                        VALUES(?, ?, ?)
+                        
+                        `;
+
+                        params.push(fiels.password);
+
+                    }
+
+                    conn.query(query, params, (err, results)=>{
+
+                        if(err) {
+
+                            reject(err);
+
+                        } else {
+                        
+                        resolve(results);
+
+                        } 
+                
+                    });
+                });
+            },
+
+            delete(id){
+
+            return new Promise((resolve, reject)=>{
+            
+            conn.query `
+            
+            DELETE * FROM tb_users WHERE id = ?
+            
+            `,[
+
+
+            ], (err , results =>{
+
+                if(err){
+
+                    reject(err)
+                } else {
+
+                    resolve(results)
+                }
+
+            });
+
+        });
+            
+    }
+}
